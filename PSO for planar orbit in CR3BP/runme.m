@@ -40,7 +40,7 @@ tspan = [0 8];
 EventFunc = @(t,x) Events_cres(t,x,G_var);
 options = odeset('Reltol',1e-12,'Abstol',1e-12,'Events',EventFunc);
 [t,X] = ode45(@(t,X) dynamics(t,X,G_var), tspan, [x(1); 0; 0; x(2)], options);
-[t,X] = ode45(@(t,X) dynamics(t,X,G_var), [0, 2*t(end)], [x(1); 0; 0; x(2)], options);
+[t,X] = ode45(@(t,X) dynamics(t,X,G_var), [0, 2*t(end)], [x(1); 0; 0; x(2)]);
 
 figure(2)
 plot(X(:,1),X(:,2)); hold on;

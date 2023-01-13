@@ -17,30 +17,30 @@ clc;
 % System Parameters
 G_var.mu = 0.01215;
 G_var.librationPt = 1;
-G_var.orbit = 'lyapunov';
-G_var.type = 'none';    % 'northern'/ 'southern' for halo, 'none' otherwise
-G_var.C_req = 3.01;
+G_var.orbit = 'halo';
+G_var.type = 'northern';    % 'northern'/ 'southern' for halo, 'none' otherwise
+G_var.C_req = 2.9;
 
 fval = 10^5;
 
 equilPts = getEquilPts(G_var.mu);
 switch G_var.orbit
     case 'lyapunov'
-        lb = [equilPts(G_var.librationPt,1)-0.15,0.1];    % [x_0, v_y0]
+        lb = [equilPts(G_var.librationPt,1)-0.15,0.01];    % [x_0, v_y0]
         ub = [equilPts(G_var.librationPt,1)-0.001,1];
     case 'halo'
         switch G_var.type
             case 'northern'         % for L1, L2: z_0 > 0, for L3: z_0 < 0 
                 switch G_var.librationPt
                     case 1
-                        lb = [equilPts(G_var.librationPt,1)-0.15, 1e-6, 1e-6];     % [x_0, z_0, v_y0] 
+                        lb = [equilPts(G_var.librationPt,1)-0.15, 0.01, 0.01];     % [x_0, z_0, v_y0] 
                         ub = [1-G_var.mu, 1, 5];    % v_y0 > 0
                     case 2
-                        lb = [1-mu, 1e-6, -5];         % [x_0, z_0, v_y0]
-                        ub = [1-mu+1, 1, -1e-6];        % v_y0 < 0
+                        lb = [1-mu, 0.01, -5];         % [x_0, z_0, v_y0]
+                        ub = [1-mu+1, 1, -0.01];        % v_y0 < 0
                     case 3
-                        lb = [-mu-1, -1, 1e-6];        % [x_0, z_0, v_y0]
-                        ub = [-mu, -1e-6, 5];           % v_y0 > 0
+                        lb = [-mu-1, -1, 0.01];        % [x_0, z_0, v_y0]
+                        ub = [-mu, -0.01, 5];           % v_y0 > 0
                 end
             case 'southern'         % for L1, L2: z_0 < 0, for L3: z_0 > 0 
                 switch G_var.librationPt
@@ -56,7 +56,7 @@ switch G_var.orbit
                 end
         end
 end
-options = optimoptions('particleswarm','SwarmSize',20,'HybridFcn',@fmincon, 'MaxIterations', 250, 'FunctionTolerance', 1e-12,'PlotFcn',{'pswplotbestf',@plotEachGeneration});%,'FunValCheck','on');
+options = optimoptions('particleswarm','SwarmSize',50,'HybridFcn',@fmincon, 'MaxIterations', 250, 'FunctionTolerance', 1e-12,'PlotFcn',{'pswplotbestf',@plotEachGeneration},'UseParallel',logical(1),'ObjectiveLimit',1e-1);%,'FunValCheck','on');
 
 %rng default  % For reproducibility
 func = @(Y) fitnessValue(Y,G_var);
@@ -67,7 +67,7 @@ switch G_var.orbit
         nvars = 3;
 end
 
-while fval == 10^5
+while fval > 1e-1
     [x,fval,exitflag,output] = particleswarm(func,nvars,lb,ub,options);
 end
 

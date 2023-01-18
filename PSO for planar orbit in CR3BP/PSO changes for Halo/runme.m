@@ -17,8 +17,8 @@ clc;
 % System Parameters
 G_var.mu = 0.01215;
 G_var.librationPt = 1;
-G_var.orbit = 'halo';
-G_var.type = 'northern';    % 'northern'/ 'southern' for halo, 'none' otherwise
+G_var.orbit = 'axial';
+G_var.type = 'none';    % 'northern'/ 'southern' for halo, 'none' otherwise
 G_var.C_req = 2.9;
 
 fval = 10^5;
@@ -28,9 +28,9 @@ switch G_var.orbit
     case 'lyapunov'
         lb = [equilPts(G_var.librationPt,1)-0.15,0.01];    % [x_0, v_y0]
         ub = [equilPts(G_var.librationPt,1)-0.001,1];
-    case 'halo'
+    case {'halo', 'axial'}                  % for axial [x_0, v_y0, v_z0]
         switch G_var.type
-            case 'northern'         % for L1, L2: z_0 > 0, for L3: z_0 < 0 
+            case {'northern', 'none'}       % for L1, L2: z_0 > 0, for L3: z_0 < 0 
                 switch G_var.librationPt
                     case 1
                         lb = [equilPts(G_var.librationPt,1)-0.15, 0.01, 0.01];     % [x_0, z_0, v_y0] 
@@ -56,14 +56,14 @@ switch G_var.orbit
                 end
         end
 end
-options = optimoptions('particleswarm','SwarmSize',50,'HybridFcn',@fmincon, 'MaxIterations', 250, 'FunctionTolerance', 1e-12,'PlotFcn',{'pswplotbestf',@plotEachGeneration},'UseParallel',logical(1),'ObjectiveLimit',1e-1);%,'FunValCheck','on');
+options = optimoptions('particleswarm','SwarmSize',50,'HybridFcn',@fmincon, 'MaxIterations', 250, 'FunctionTolerance', 1e-12,'PlotFcn',{'pswplotbestf',@plotEachGeneration},'ObjectiveLimit',1e-1);%,'FunValCheck','on');
 
 %rng default  % For reproducibility
 func = @(Y) fitnessValue(Y,G_var);
 switch G_var.orbit
     case 'lyapunov'
         nvars = 2;
-    case 'halo'
+    case {'halo', 'axial'}
         nvars = 3;
 end
 
@@ -78,6 +78,8 @@ switch G_var.orbit
         X0 = [x(1); 0; 0; x(2)];
     case 'halo'
         X0 = [x(1); 0; x(2); 0; x(3); 0];
+    case 'axial'
+        X0 = [x(1); 0; 0; 0; x(2); x(3)];
 end
 
 tspan = [0 10];
@@ -92,7 +94,7 @@ switch G_var.orbit
         plot(X(:,1),X(:,2)); hold on; grid on;
         scatter(1-G_var.mu,0,'*');
         scatter(equilPts(G_var.librationPt,1),equilPts(G_var.librationPt,2));
-    case 'halo'
+    case {'halo', 'axial'}
         plot3(X(:,1),X(:,2),X(:,3)); hold on; grid on;
         scatter3(1-G_var.mu,0, 0,'*');
         scatter3(equilPts(G_var.librationPt,1),equilPts(G_var.librationPt,2), 0);

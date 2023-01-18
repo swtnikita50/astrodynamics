@@ -25,7 +25,7 @@ switch G_var.orbit
         yDDot = -2*xDot + Uy;
         
         Xdot = [xDot;yDot;xDDot;yDDot];
-    case 'halo'
+    case {'halo', 'axial'}
         x = X(1);
         y = X(2);
         z = X(3);
